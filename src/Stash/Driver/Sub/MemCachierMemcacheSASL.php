@@ -13,7 +13,7 @@ use Stash\Exception\RuntimeException;
 class MemCachierMemcacheSASL
 {
     /**
-     * @var \Memcached
+     * @var MemcacheSASL
      */
     protected $memcached;
 
@@ -165,7 +165,7 @@ class MemCachierMemcacheSASL
     public function get($key)
     {
         $value = $this->memcached->get($key);
-        if ($value === false && $this->memcached->getResultCode() == \Memcached::RES_NOTFOUND) {
+        if ($value === false) {
             return false;
         }
 
@@ -182,15 +182,11 @@ class MemCachierMemcacheSASL
     public function cas($key, $value)
     {
         $token = null;
-        if (($rValue = $this->memcached->get($key, null, $token)) !== false) {
+        if (($rValue = $this->memcached->get($key)) !== false) {
             return $rValue;
         }
 
-        if ($this->memcached->getResultCode() === \Memcached::RES_NOTFOUND) {
-            $this->memcached->add($key, $value);
-        } else {
-            $this->memcached->cas($token, $key, $value);
-        }
+        $this->memcached->add($key, $value);
 
         return $value;
     }
