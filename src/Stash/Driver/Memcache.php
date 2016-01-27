@@ -98,12 +98,16 @@ class Memcache extends AbstractDriver
 
         $extension = strtolower($options['extension']);
 
-        if (class_exists('Memcached', false) && $extension != 'memcache') {
-            $this->memcache = new SubMemcached($servers, $options);
-        } elseif (class_exists('Memcache', false) && $extension != 'memcached') {
-            $this->memcache = new SubMemcache($servers);
+        if (class_exists('MemCachier\MemcacheSASL', true) && ($extension != 'memcache' || $extension != 'memcached')) {
+            $this->memcache = new Stash\Driver\Sub\MemCachierMemcacheSASL($servers);
         } else {
-            throw new RuntimeException('No memcache extension available.');
+            if (class_exists('Memcached', false) && $extension != 'memcache') {
+                $this->memcache = new SubMemcached($servers, $options);
+            } elseif (class_exists('Memcache', false) && $extension != 'memcached') {
+                $this->memcache = new SubMemcache($servers);
+            } else {
+                throw new RuntimeException('No memcache extension available.');
+            }
         }
     }
 
